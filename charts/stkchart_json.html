@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-ui.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-exports.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-stock.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-data-adapter.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.anychart.com/releases/8.0.0/css/anychart-ui.min.css" />
+    <style>
+html, body{
+width: 100%;
+height: 100%;
+margin: 0;
+padding: 0;
+}
+.container
+{
+width: 100%;
+height: 500px;
+}
+  </style>
+</head>
+<body>
+
+
+
+<div>
+    <p>some text</p>
+    <div id="container" class="container"></div>
+    <table border='1'> <tr> <th>Name</th> <th>Favorite Color</th> </tr> <tr> <td>Bob</td> <td>Yellow</td> </tr> <tr> <td>Michelle</td> <td>Purple</td> </tr> </table>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+
+
+anychart.onDocumentReady(function() {
+    //var csvType = prompt("Enter csv type", "");
+    var tkr = prompt("Enter tkr symbol", "");
+    var url_csv ='http://localhost:8000/get-csv-stk';
+    var url_json='http://localhost:8000/get-json-stk';
+
+    var sdate='2016-01-30';
+    var edate='2016-12-31'
+
+    var url_csv2 = url_csv + '?tkr=' + tkr + '&sdate=' + sdate  + '&edate=' + edate;
+    var url_json2 = url_json + '?tkr=' + tkr + '&sdate=' + sdate  + '&edate=' + edate;
+
+    //var url = new URL(url_csv2);
+    var url = new URL(url_json2);
+
+    var param_tkr = url.searchParams.get("tkr");
+    var param_sdate = url.searchParams.get("sdate");
+    var param_edate = url.searchParams.get("edate");
+
+    //--------------Init data and data mappings--------------------------------------------------------------------
+
+    //anychart.data.loadCsvFile('http://localhost:8000/get-csv-stk', function(data) {
+    //anychart.data.loadCsvFile('http://www.appsmosaic.com:5000/get-csv-data', function(data) {
+
+
+    //---------------CSV--------------------------------
+    /*
+    //anychart.data.loadCsvFile(url, function(data) {
+    var dataTable = anychart.data.table();
+    dataTable.addData(data);
+
+
+
+    // map loaded data for the ohlc series
+    var mapping = dataTable.mapAs({
+      'open': 1,
+      'high': 2,
+      'low': 3,
+      'close': 4,
+      'value':4
+    });
+    */
+    //---------------Json--------------------------------
+    anychart.data.loadJsonFile(url, function(data) {
+
+    var dataTable = anychart.data.table('TkrDate', "yyyy-MM-dd");
+    dataTable.addData(data);
+    var mapping = dataTable.mapAs({
+      'open': "Open",
+      'high': "High",
+      'low': "Low",
+      'close': "Close",
+      'value': "Close",
+    });
+
+    //------init chart --------------------------
+
+    chart = anychart.stock();
+    chart.crosshair(true);
+
+    //-----  plot0 - candlestick with series sma50 and sma200 -----------------------------------------------
+
+    var plot0 = chart.plot(0);
+    plot0.yGrid(true)
+      .xGrid(true)
+      .yMinorGrid(true)
+      .xMinorGrid(true);
+
+    var cs = plot0.candlestick(mapping);
+    cs.name('MSFT').legendItem().iconType('rising-falling');
+
+    chart.scroller().candlestick(mapping);
+    chart.container('container');
+    chart.draw();
+    rangePicker = anychart.ui.rangePicker();
+    rangePicker.render(chart);
+
+    rangeSelector = anychart.ui.rangeSelector();
+    rangeSelector.render(chart);
+
+
+
+    /*
+    document.write('<BR>');
+    document.write(param_tkr);
+    document.write('<BR>');
+    document.write(param_sdate);
+    document.write('<BR>');
+    document.write(param_edate);
+    document.write(url);
+    */
+
+  });
+});
+
+
+
+    </script>
+</body>
+</html>
