@@ -1,31 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"html/template"
-	"log"
 	"net/http"
-	"os"
+	"log"
+	"html/template"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
+	"encoding/json"
 )
-
-
-type Stk_Serie struct {
-//	Id int
-//	Seq int
-	TkrDate string
-	Open float32
-	High float32
-	Low float32
-	Close float32
-	//Vol float32
-	SMA_50 float32
-	SMA_200 float32
-}
-type Stk_Event struct {
+type StkEvent struct {
 	Stk_id int
 	Tkr string
 	Seq int
@@ -35,156 +20,185 @@ type Stk_Event struct {
 	Sma1_dir string
 	Sma2_dir string
 }
+type StkRow struct {
+	Stk_id int
+	Tkr string
+	Seq int
+	Tkr_date string
+	Open float32
+	High float32
+	Low float32
+	Close float32
+	Volume float32
+	Sma50 float32
+	Sma200 float32
+}
+
 var db *sql.DB
+var pageTemplate *template.Template
+var zz int =60
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/page.html")
-	if err != nil {
-		panic(err)
-	}
-	t.Execute(w, nil)
-}
-
-
-func handlerJsonStk(res http.ResponseWriter, req *http.Request) {
-
-	res.Header().Set("Access-Control-Allow-Origin", "*")
-	stk_series := getStks()
-	// decode chart data to JSON
-	data_json, err := json.Marshal(stk_series)
-
-	if err != nil {
-		http.Error(res, err.Error(), 500)
-		return
-	}
-
-	//res.Header().Set("Content-Type", "application/json; charset=utf-8")
-	res.Header().Set("Content-Type", "application/json")
-	res.Write(data_json)
-
-	fmt.Println("ss0 : db series")
-	fmt.Println(stk_series)
-	fmt.Println("ss1 : data_json")
-	fmt.Println(data_json)
-	fmt.Println("ss2 : string(data_json)")
-	fmt.Println(string(data_json))
-	fmt.Println("ss3")
-
-}
-
-func handlerJsonEvents(res http.ResponseWriter, req *http.Request) {
-
-	res.Header().Set("Access-Control-Allow-Origin", "*")
-	stk_events := getEvents()
-	data_json, err := json.Marshal(stk_events)
-	if err != nil {
-		http.Error(res, err.Error(), 500)
-		return
-	}
-
-	//res.Header().Set("Content-Type", "application/json; charset=utf-8")
-	res.Header().Set("Content-Type", "application/json")
-	res.Write(data_json)
-
-
-	fmt.Println("ss0 : db series")
-	fmt.Println(stk_events)
-	fmt.Println("ss1 : data_json")
-	fmt.Println(data_json)
-	fmt.Println("ss2 : string(data_json)")
-	fmt.Println(string(data_json))
-	fmt.Println("ss3")
-
-
-}
-
-
-// init db and page template
 func init() {
-	//pageTemplate = template.Must(template.ParseFiles("templates/index.html"))
 	var err error
-	db, err = sql.Open("mysql", "ayong:ayong@/anychart_db")
-	if err != nil {
+	db, err =sql.Open("mysql","ayong:ayong@/anychart_db")
+	if err !=nil {
 		panic(err)
 	}
 }
 
-
-// get stk events  from database
-func getEvents() []Stk_Event{
-
-	res, err := db.Query("select stk_id, tkr, seq, tkr_date, event_id, event_type, sma1_dir, sma2_dir from ay_events order by seq")
-
-	if err != nil {
-		panic(err)
-	}
-	defer res.Close()
+func GetStkEvents() (stkEvents []StkEvent, err error) {
+	rows, err :=db.Query("select stk_id, tkr, seq, tkr_date, event_id, event_type, sma1_dir, sma2_dir from ay_events order by seq")
+	defer rows.Close()
 	var (
-		//id, seq, VOL int
 		stk_id, seq, event_id int
 		tkr, tkr_date, event_type, sma1_dir, sma2_dir string
-		stk_events    []Stk_Event
+		stk_events    []StkEvent
 	)
-	for res.Next() {
-		fmt.Println("aa1")
-		err = res.Scan(&stk_id, &tkr, &seq, &tkr_date, &event_id, &event_type, &sma1_dir, &sma2_dir)
-
-		if err != nil {
-			panic(err)
-		}
-		fmt.Println(stk_id)
-		fmt.Println("aa2 : " + strconv.Itoa(stk_id) + tkr)
-		stk_events = append(stk_events, Stk_Event{stk_id, tkr, seq, tkr_date, event_id, event_type, sma1_dir, sma2_dir})
-
+	for (rows.Next()) {
+		err =rows.Scan(&stk_id, &tkr, &seq, &tkr_date, &event_id, &event_type, &sma1_dir, &sma2_dir)
+		stk_events = append(stk_events, StkEvent{stk_id, tkr, seq, tkr_date, event_id, event_type, sma1_dir, sma2_dir})
 	}
-	return stk_events
-}
+	return stk_events, err
 
-// get stk data from database
-func getStks() []Stk_Serie {
-	num0 :=304;
-	num_range :=40
-	num1 :=num0-num_range;
-	num2 :=num0+num_range;
-	res, err := db.Query("SELECT tkr_date, open, high, low, close, round(sma_50,2) sma_50, round(sma_200,2) sma_200 FROM stk1 where tkr='MSFT' and seq between ? and ? order by SEQ", num1, num2)
-	if err != nil {
+}
+func GetChartData(tkr string, seq1 int, seq2 int) (stkRows []StkRow, err error) {
+	rows, err :=db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol, sma50, sma200 from stk2 where tkr=? and seq between ? and ? order by seq", tkr, seq1, seq2)
+	defer rows.Close()
+	var (
+		stk_id, seq int
+		open, high, low, close, vol, sma50, sma200 float32
+		ticker,tkr_date string
+	)
+	for (rows.Next()) {
+		err =rows.Scan(&stk_id, &ticker, &seq, &tkr_date, &open, &high, &low, &close, &vol, &sma50, &sma200)
+		stkRows = append(stkRows, StkRow{stk_id, tkr, seq, tkr_date, open, high, low, close, vol, sma50, sma200})
+	}
+	return stkRows, err
+
+}
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	tpl, err :=template.ParseFiles("templates/index.html")
+	if err !=nil {
 		panic(err)
 	}
-	defer res.Close()
-	var (
-		//id, seq, VOL int
-		tkrDate string
-		open, high, low, close, sma_50, sma_200 float32
-		stk_series    []Stk_Serie
-	)
-	for res.Next() {
-		err = res.Scan(&tkrDate, &open, &high, &low, &close, &sma_50, &sma_200)
-		if err != nil {
-			panic(err)
-		}
-		stk_series = append(stk_series, Stk_Serie{tkrDate, open, high, low, close, sma_50, sma_200})
-	}
-	return stk_series
+	tpl.Execute(w, nil)
+
 }
 
+func handlerJsonStk(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("inside handlerJsonStk!!")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	vals := r.URL.Query()
+	tkr :=vals.Get("tkr")
+	seqStr :=vals.Get("seq")
+	seq, err := strconv.Atoi(seqStr)
+	seq1 := seq-zz
+	seq2 := seq+zz
+	fmt.Println(tkr)
+	fmt.Println(seq)
+	stkRows, err :=GetChartData(tkr, seq1,seq2)
+
+	// decode chart data to JSON
+	data_json, err := json.Marshal(stkRows)
+
+	if err != nil {
+		//http.Error(res, err.Error(), 500)
+		fmt.Println("Error in handlerJsonStk")
+		fmt.Println(err)
+		return
+	}
+
+	//res.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(data_json)
+
+	fmt.Println("ss0 : db series")
+	fmt.Println(stkRows)
+	fmt.Println("ss1 : data_json")
+	fmt.Println(data_json)
+	fmt.Println("ss2 : string(data_json)")
+	fmt.Println(string(data_json))
+	fmt.Println("ss3")
+
+}
+
+func handleListStkEvents(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("inside handleListStkEvents !!")
+
+
+	stkEvents, err :=GetStkEvents()
+
+
+	if (err!=nil){
+		//error_message(w, r, "Cannot get stock events")
+		fmt.Println("Error: Cannot get stock events!!")
+	} else {
+		pageTemplate = template.Must(template.ParseFiles("templates/stk_events.html"))
+
+		//run this when it is not a template
+		//pageTemplate.Execute(w, stkEvents)
+
+		//when it is a template
+		pageTemplate.ExecuteTemplate(w, "tpl_events", stkEvents)
+	}
+	fmt.Println("end handleListStkEvents !!")
+
+}
+func handleChart(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("inside chart!!")
+
+	vals := r.URL.Query()
+	tkr :=vals.Get("tkr")
+	seqStr :=vals.Get("seq")
+	drangeStr :=vals.Get("drange")
+	seq, _:=strconv.Atoi(seqStr)
+	drange, _:=strconv.Atoi(drangeStr)
+	//seq1 := seq-drange
+	//seq2 := seq+drange
+	fmt.Println(tkr)
+	fmt.Println(seq)
+	fmt.Println(drange)
+	stkRows, err :=GetChartData(tkr, seq-drange,seq+drange)
+
+
+
+	if (err!=nil){
+		fmt.Println("Error: Cannot stock charting data!")
+		fmt.Println(err)
+	} else {
+		pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
+
+		//run this when it is not a template
+		//pageTemplate.Execute(w, stkEvents)
+
+		//when it is a template
+		pageTemplate.ExecuteTemplate(w, "tpl_chart", stkRows)
+	}
+	fmt.Println("end show chart !!")
+}
 
 
 func main() {
-	port := os.Getenv("WEB_SERVER_PORT")
-	if port == "" {
-		port = ":8000"
-	}
 
-	fmt.Printf("Listening on port %s!\n", port)
-	http.HandleFunc("/", handler)
-	http.HandleFunc("/get-json-stk", handlerJsonStk)
-	http.HandleFunc("/get-json-events", handlerJsonEvents)
+	port :=":80"
 
-	fs := http.FileServer(http.Dir("charts"))
+	//serve static files
+	fs :=http.FileServer(http.Dir("charts"))
 	http.Handle("/charts/", http.StripPrefix("/charts/", fs))
 
+	http.HandleFunc("/", handleIndex)
+
+	http.HandleFunc("/list-stk-events", handleListStkEvents)
+	http.HandleFunc("/chart", handleChart)
+	http.HandleFunc("/get-json-stk", handlerJsonStk)
+
+
+	fmt.Printf("Listening on port %s\n", port)
 	err := http.ListenAndServe(port, nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+	if (err!=nil) {
+		log.Fatal("ErrorListenAndServe", err)
 	}
 }

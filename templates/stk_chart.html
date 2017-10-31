@@ -1,0 +1,124 @@
+{{ define "tpl_chart" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stock chart</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-ui.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-exports.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-stock.min.js"></script>
+    <script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-data-adapter.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.anychart.com/releases/8.0.0/css/anychart-ui.min.css" />
+    <style>
+html, body{
+width: 100%;
+height: 100%;
+margin: 0;
+padding: 0;
+}
+.container
+{
+width: 80%;
+height: 800px;
+}
+  </style>
+
+</head>
+<body>
+
+<div>
+    <!--p>some text</p-->
+    <!-- ################################# -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="lead"> <i class="fa fa-comment-o"></i> AAA</span>
+        </div>
+        <div class="panel-body">
+            BBB
+            <div class="pull-right">
+                <a href="/zzz">CCC</a>
+            </div>
+        </div>
+    </div>
+    <!-- ################################# -->
+
+    <div id="container" class="container"></div>
+
+    <!-- ################################# -->
+    <!--table border='1'>
+        <tr> <th>Name</th> <th>Favorite Color</th> </tr>
+        <tr> <td>Bob</td> <td>Yellow</td> </tr>
+        <tr> <td>Michelle</td> <td>Purple</td> </tr>
+    </table-->
+</div>
+
+<script src="/static/js/jquery-2.1.1.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+anychart.onDocumentReady(function() {
+
+    var current_page_url = window.location;
+    //alert("Current page url=" + current_page_url);
+
+    var url = new URL(current_page_url);
+    var param_tkr = url.searchParams.get("tkr");
+    var param_seq= url.searchParams.get("seq");
+    //alert("tkr=" + param_tkr + " and seq=" + param_seq);
+
+    var url_json='http://localhost/get-json-stk?tkr=' +param_tkr + '&seq=' + param_seq;
+    //alert("url_json=" + url_json);
+
+    //---------------Json--------------------------------
+    anychart.data.loadJsonFile(url_json, function(data) {
+
+    var dataTable = anychart.data.table('Tkr_date', "yyyy-MM-dd");
+    dataTable.addData(data);
+    var mapping = dataTable.mapAs({
+      'open': "Open",
+      'high': "High",
+      'low': "Low",
+      'close': "Close",
+      'value': "Close",
+    });
+
+    //------init chart --------------------------
+
+    chart = anychart.stock();
+    chart.crosshair(true);
+
+    //-----  plot0 - candlestick with series sma50 and sma200 -----------------------------------------------
+
+    var plot0 = chart.plot(0);
+    plot0.yGrid(true)
+      .xGrid(true)
+      .yMinorGrid(true)
+      .xMinorGrid(true);
+
+    var cs = plot0.candlestick(mapping);
+    cs.name('MSFT').legendItem().iconType('rising-falling');
+
+    chart.scroller().candlestick(mapping);
+    chart.container('container');
+    chart.draw();
+    rangePicker = anychart.ui.rangePicker();
+    rangePicker.render(chart);
+
+    //rangeSelector = anychart.ui.rangeSelector();
+    //rangeSelector.render(chart);
+
+
+  });
+});
+
+</script>
+</body>
+</html>
+
+{{ end }}
+
