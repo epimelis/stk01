@@ -7,7 +7,6 @@ import (
 	"html/template"
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
-	//_ "github.com/mattn/go-oci8"
 	"strconv"
 	"encoding/json"
 )
@@ -41,8 +40,8 @@ var zz int =60
 
 func init() {
 	var err error
-	db, err =sql.Open("mysql","ayong:ayong@/anychart_db")
-	//db, err =sql.Open("oci8", "stkappdev/stkappdev@localhost:1521/xe")
+	//db, err =sql.Open("mysql","ayong:ayong@/anychart_db")
+	db, err =sql.Open("oci8", "stkappdev/stkappdev@localhost:1521/xe")
 	if err !=nil {
 		panic(err)
 	}
@@ -65,7 +64,6 @@ func GetStkEvents() (stkEvents []StkEvent, err error) {
 }
 func GetChartData(tkr string, seq1 int, seq2 int) (stkRows []StkRow, err error) {
 	rows, err :=db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol, sma50, sma200 from stk2 where tkr=? and seq between ? and ? order by seq", tkr, seq1, seq2)
-	//rows, err :=db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol, sma50, sma200 from stk2 where tkr=:1 and seq between :2 and :3 order by seq", tkr, seq1, seq2)
 	defer rows.Close()
 	var (
 		stk_id, seq int
@@ -118,7 +116,6 @@ func handlerJsonStk(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data_json)
 
-	/*
 	fmt.Println("ss0 : db series")
 	fmt.Println(stkRows)
 	fmt.Println("ss1 : data_json")
@@ -126,7 +123,6 @@ func handlerJsonStk(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("ss2 : string(data_json)")
 	fmt.Println(string(data_json))
 	fmt.Println("ss3")
-	*/
 
 }
 

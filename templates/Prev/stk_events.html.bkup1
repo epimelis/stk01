@@ -1,4 +1,5 @@
 {{ define "tpl_events" }}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,20 +7,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Stk Trade - Events</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!--script src="/static/js/jquery-2.1.1.min.js"></script-->
+    <!--script src="/static/js/bootstrap.min.js"></script-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 </head>
-
 <body>
-<div>
+<!-- template "navbar" . -->
+
+<div class="container">
+    <!-- start content ##################### -->
     <p class="lead">
-        <a href="/thread/new">Stock Events</a>
+        <a href="/thread/new">List of eventsZZ</a>
     </p>
+
     {{ range . }}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <span class="lead"> <i class="fa fa-caret-square-o-right"></i> {{ .Tkr }}</span>
+            <span class="lead"> <i class="fa fa-comment-o"></i> {{ .Tkr }}</span>
         </div>
         <div class="panel-body">
             Tkr :{{ .Tkr }} - Seq :{{ .Seq }} - Stock Id :{{ .Stk_id }} - Tkr Date : {{ .Tkr_date }} - Event type : {{ .Event_type }}
@@ -29,8 +35,13 @@
         </div>
     </div>
     {{ end }}
-</div>
 
+<!-- end content ##################### -->
+
+</div> <!-- /container -->
+
+<!--script src="js/jquery-2.1.1.min.js"></script-->
+<!--script-- src="js/bootstrap.min.js"></script-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 

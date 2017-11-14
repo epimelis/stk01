@@ -4,51 +4,31 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Stock chart</title>
-    <!--link href="css/bootstrap.min.css" rel="stylesheet"-->
-    <!--link href="css/font-awesome.min.css" rel="stylesheet"-->
+    <title>Stk Trade - Events</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-
-    <style>
-html, body{
-width: 100%;
-height: 100%;
-margin: 0;
-padding: 0;
-}
-.container
-{
-width: 80%;
-height: 800px;
-}
-  </style>
-
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+
 <body>
-GGG999<br>
-HHHH<br>
 <div>
+    <p class="lead">
+        <a href="/thread/new">List of eventsZZ</a>
+    </p>
     <div class="panel panel-default">
         <div class="panel-heading">
-            <span class="lead"> <i class="fa fa-comment-o"></i> AAA</span>
+            <span class="lead"> <i class="fa fa-comment-o"></i> {{ .Tkr }}</span>
         </div>
         <div class="panel-body">
-            BBB
+            Tkr :{{ .Tkr }} - Seq :{{ .Seq }} - Stock Id :{{ .Stk_id }} - Tkr Date : {{ .Tkr_date }} - Event type : {{ .Event_type }}
             <div class="pull-right">
-                <a href="/zzz">CCC</a>
+                <a href="/chart?tkr={{.Tkr}}&seq={{.Seq}}&drange=30" target="_blank">Show chart</a>
             </div>
         </div>
     </div>
-    <div id="container" class="container"></div>
-
 </div>
 
-<!--script src="js/jquery-2.1.1.min.js"></script-->
-<!--script-- src="js/bootstrap.min.js"></script-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
-
 </body>
 </html>
 
