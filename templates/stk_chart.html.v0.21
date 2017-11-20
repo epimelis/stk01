@@ -92,17 +92,11 @@ anychart.onDocumentReady(function() {
       'value': "Close",
     });
 
-    var mappingVolume = dataTable.mapAs({
-      'value': "Volume",
-    });
-
-
     //------init chart --------------------------
 
     chart = anychart.stock();
     chart.crosshair(true);
 
-/*
     //-----  plot0 - candlestick with series sma50 and sma200 -----------------------------------------------
 
     var plot0 = chart.plot(0);
@@ -135,79 +129,7 @@ anychart.onDocumentReady(function() {
     series_sma20.legendItem().format(function(){
       return 'SMA(20): ' + this.value.toFixed(3)
     });
-*/
 
-    //-----  plot0 - candlestick with bollinger bands -----------------------------------------------
-
-    var plot0 = chart.plot(0);
-    plot0.yGrid(true)
-      .xGrid(true)
-      .yMinorGrid(true)
-      .xMinorGrid(true);
-
-    // create BBands indicator with period = 20, deviation = 2
-
-    var cs = plot0.candlestick(mapping);
-    var bBandsIndicator = plot0.bbands(mapping, 20, 2);
-
-    //set attributes
-    cs.name('[Tkr]').legendItem().iconType('rising-falling');
-    bBandsIndicator.upperSeries().stroke('1.5 #3b8ad8');
-    bBandsIndicator.middleSeries().stroke('1.5 #f18126');
-    bBandsIndicator.lowerSeries().stroke('1.5 #7bc0f7');
-
-    //format tooltips
-    cs.tooltip().format('Open: {%Open}{decimalsCount:3} \nHigh: {%High}{decimalsCount:3} \nLow: {%Low}{decimalsCount:3} \nClose: {%Close}{decimalsCount:3}');
-    bBandsIndicator.upperSeries().tooltip().format('BB-Upper: {%value}{decimalsCount:3}');
-    bBandsIndicator.middleSeries().tooltip().format('BB-Middle: {%value}{decimalsCount:3}');
-    bBandsIndicator.lowerSeries().tooltip().format('BB-Lower: {%value}{decimalsCount:3}');
-
-    //-----plot1 - volume ----------------------------
-
-    var plot1 = chart.plot(1);
-    plot1.height('20%');
-    var volume = chart.plot(1).column(mappingVolume);
-
-    //set attributes
-    //volume.name("Volume");
-
-    //format tooltips
-    volume.tooltip().format('Volume: {%value}{decimalsCount:3}');
-
-
-    //format legend
-    volume.legendItem().format(function(){
-      return 'Volume: ' + this.value
-    });
-
-
-/*
-    //-----  plot2 - bollinger -----------------------------------------------
-
-    // create first plot on the chart
-    var plot2 = chart.plot(2);
-    // set grid settings
-    plot2.yGrid(true)
-      .xGrid(true)
-      .yMinorGrid(true)
-      .xMinorGrid(true);
-
-    var series = plot2.candlestick(mapping).name('CSCO');
-    series.legendItem().iconType('rising-falling');
-
-    // create BBands indicator with period = 20, deviation = 2
-    var bBandsIndicator = plot.bbands(mapping, 20, 2);
-    bBandsIndicator.upperSeries().stroke('1.5 #3b8ad8');
-    bBandsIndicator.middleSeries().stroke('1.5 #f18126');
-    bBandsIndicator.lowerSeries().stroke('1.5 #7bc0f7');
-
-    var indicatorPlot = chart.plot(2);
-    indicatorPlot.height('30%');
-
-    // create BBands %B indicator with period = 20, deviation = 2
-    var bBandsBIndicator = indicatorPlot.bbandsB(mapping, 20, 2);
-    bBandsBIndicator.series().stroke('1.5 #6E9C4E');
-*/
     //-----------------------------------------------------------------------------------------------------------
     chart.scroller().candlestick(mapping);
     chart.container('container');

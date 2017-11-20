@@ -102,7 +102,6 @@ anychart.onDocumentReady(function() {
     chart = anychart.stock();
     chart.crosshair(true);
 
-/*
     //-----  plot0 - candlestick with series sma50 and sma200 -----------------------------------------------
 
     var plot0 = chart.plot(0);
@@ -135,32 +134,8 @@ anychart.onDocumentReady(function() {
     series_sma20.legendItem().format(function(){
       return 'SMA(20): ' + this.value.toFixed(3)
     });
-*/
 
-    //-----  plot0 - candlestick with bollinger bands -----------------------------------------------
 
-    var plot0 = chart.plot(0);
-    plot0.yGrid(true)
-      .xGrid(true)
-      .yMinorGrid(true)
-      .xMinorGrid(true);
-
-    // create BBands indicator with period = 20, deviation = 2
-
-    var cs = plot0.candlestick(mapping);
-    var bBandsIndicator = plot0.bbands(mapping, 20, 2);
-
-    //set attributes
-    cs.name('[Tkr]').legendItem().iconType('rising-falling');
-    bBandsIndicator.upperSeries().stroke('1.5 #3b8ad8');
-    bBandsIndicator.middleSeries().stroke('1.5 #f18126');
-    bBandsIndicator.lowerSeries().stroke('1.5 #7bc0f7');
-
-    //format tooltips
-    cs.tooltip().format('Open: {%Open}{decimalsCount:3} \nHigh: {%High}{decimalsCount:3} \nLow: {%Low}{decimalsCount:3} \nClose: {%Close}{decimalsCount:3}');
-    bBandsIndicator.upperSeries().tooltip().format('BB-Upper: {%value}{decimalsCount:3}');
-    bBandsIndicator.middleSeries().tooltip().format('BB-Middle: {%value}{decimalsCount:3}');
-    bBandsIndicator.lowerSeries().tooltip().format('BB-Lower: {%value}{decimalsCount:3}');
 
     //-----plot1 - volume ----------------------------
 
