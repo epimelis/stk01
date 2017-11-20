@@ -1,0 +1,17 @@
+package main
+
+import (
+	"github.com/weigj/go-odbc"
+)
+
+func main() {
+	conn, _ := odbc.Connect("DSN=oracle_odbc;UID=andrew;PWD=andrew")
+	stmt, _ := conn.Prepare("select * from andrew_table")
+	stmt.Execute()
+	rows, _ := stmt.FetchAll()
+	for i, row := range rows {
+		println(i, row)
+	}
+	stmt.Close()
+	conn.Close()
+}
