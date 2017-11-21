@@ -34,6 +34,41 @@ type StkRow struct {
 	Volume   float32
 }
 
+type StkTrade struct {
+	Stk_Trade_Id       int
+	Stk_Id             int
+	Event_Id           int
+	Exch               string
+	Tkr                string
+	Per                string
+	Trade_Type         string
+	Trade_Status       string
+	Shares             float32
+	Bot_Price          float32
+	Bot_Date           string
+	Bot_Amt            float32
+	Sold_Price         float32
+	Sold_Date          string
+	Sold_Amt           float32
+	Target_Exit_Type   string
+	Target_Exit_Param  float32
+	Stop_Exit_Type     string
+	Stop_Exit_Param    float32
+	Gain_Loss_Amt      float32
+	Gain_Loss_Percent  float32
+	Notes              string
+	Create_Date        string
+	Loss_Threshold_Amt float32
+	Gain_Threshold_Amt float32
+	Create_Date_Price  float32
+	Bot_Pending_Date   string
+	First_Date_Check   string
+	Last_Date_Check    string
+	Monitor_Start_Date string
+	Trade_Action       string
+	Event_Date         string
+}
+
 var db *sql.DB
 var pageTemplate *template.Template
 
@@ -63,6 +98,50 @@ func GetStkEvents() (stkEvents []StkEvent, err error) {
 
 }
 
+func GetStkTrade(stk_id int) (stkTrade StkTrade, err error) {
+	sql_str := "select STK_TRADE_ID,t.STK_ID, EVENT_ID,t.EXCH,t.TKR,t.PER,TRADE_TYPE,TRADE_STATUS,SHARES,BOT_PRICE,BOT_DATE,BOT_AMT,SOLD_PRICE,SOLD_DATE,SOLD_AMT,TARGET_EXIT_TYPE,TARGET_EXIT_PARAM,STOP_EXIT_TYPE,STOP_EXIT_PARAM,GAIN_LOSS_AMT,GAIN_LOSS_PERCENT,NOTES,CREATE_DATE,LOSS_THRESHOLD_AMT,GAIN_THRESHOLD_AMT,CREATE_DATE_PRICE,BOT_PENDING_DATE,FIRST_DATE_CHECK,LAST_DATE_CHECK,MONITOR_START_DATE,TRADE_ACTION, s.tkr_date from stk s, stk_trade t where s.stk_id=t.stk_id and t.stk_id=?"
+	rows, err := db.Query(sql_str, stk_id)
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(
+			&stkTrade.Stk_Trade_Id,
+			&stkTrade.Stk_Id,
+			&stkTrade.Event_Id,
+			&stkTrade.Exch,
+			&stkTrade.Tkr,
+			&stkTrade.Per,
+			&stkTrade.Trade_Type,
+			&stkTrade.Trade_Status,
+			&stkTrade.Shares,
+			&stkTrade.Bot_Price,
+			&stkTrade.Bot_Date,
+			&stkTrade.Bot_Amt,
+			&stkTrade.Sold_Price,
+			&stkTrade.Sold_Date,
+			&stkTrade.Sold_Amt,
+			&stkTrade.Target_Exit_Type,
+			&stkTrade.Target_Exit_Param,
+			&stkTrade.Stop_Exit_Type,
+			&stkTrade.Stop_Exit_Param,
+			&stkTrade.Gain_Loss_Amt,
+			&stkTrade.Gain_Loss_Percent,
+			&stkTrade.Notes,
+			&stkTrade.Create_Date,
+			&stkTrade.Loss_Threshold_Amt,
+			&stkTrade.Gain_Threshold_Amt,
+			&stkTrade.Create_Date_Price,
+			&stkTrade.Bot_Pending_Date,
+			&stkTrade.First_Date_Check,
+			&stkTrade.Last_Date_Check,
+			&stkTrade.Monitor_Start_Date,
+			&stkTrade.Trade_Action,
+			&stkTrade.Event_Date)
+	}
+	return stkTrade, err
+
+}
+
 func GetChartData(tkr string, in_seq int, drange int) (stkRows []StkRow, err error) {
 	seq1 := in_seq - drange
 	seq2 := in_seq + drange
@@ -80,6 +159,7 @@ func GetChartData(tkr string, in_seq int, drange int) (stkRows []StkRow, err err
 	return stkRows, err
 
 }
+
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	tpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
@@ -153,23 +233,27 @@ func handleListStkEvents(w http.ResponseWriter, r *http.Request) {
 }
 func handleChart(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("inside chart!!")
-	/*
-		vals := r.URL.Query()
-		tkr := vals.Get("tkr")
-		seqStr := vals.Get("seq")
-		drangeStr := vals.Get("drange")
-		seq, _ := strconv.Atoi(seqStr)
-		drange, _ := strconv.Atoi(drangeStr)
-	*/
+	vals := r.URL.Query()
+	stk_id, err := strconv.Atoi(vals.Get("stk_id"))
 
 	fmt.Println("inside func handleChart")
 	/*
-		fmt.Println(tkr)
-		fmt.Println(seq)
-		fmt.Println(drange)
+		pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
+		pageTemplate.ExecuteTemplate(w, "tpl_chart", nil)
 	*/
-	pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
-	pageTemplate.ExecuteTemplate(w, "tpl_chart", nil)
+
+	stkTrade, err := GetStkTrade(stk_id)
+	if err != nil {
+		fmt.Println("Error: Cannot get stk trade data!")
+		fmt.Println(err)
+	} else {
+		pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
+
+		//run this when it is not a template
+		//pageTemplate.Execute(w, stkEvents)
+		//when it is a template, run this
+		pageTemplate.ExecuteTemplate(w, "tpl_chart", stkTrade)
+	}
 
 	/*
 		stkRows, err := GetChartData(tkr, seq, drange)

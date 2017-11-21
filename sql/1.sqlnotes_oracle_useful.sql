@@ -23,3 +23,29 @@ ORDER BY SEQ
 
 
 
+-------------------------------------------------------
+
+--Queries on STK_TRADE table
+
+desc stk_trade;
+select * from stk where stk_id=52556;
+select * from stk_event where stk_id=52556;
+select * from stk_trade where stk_id=52556;
+
+select
+--COUNT(*), COUNT(DISTINCT STK_ID)
+stk_id, stk_trade_id, event_id, exch, tkr, trade_type, trade_status
+from stk_trade
+where stk_id=52556;
+
+
+select s.stk_trade_id, s.stk_id, s.tkr from stk_trade s where s.stk_id=52556;
+
+-------------------------------------------------------
+--GOLANG
+--Generate for golang struct
+select initcap(column_name) || '   '|| decode(data_type, 'NUMBER', 'float32', 'VARCHAR2', 'string', 'DATE', 'string')
+from all_tab_columns where table_name='STK_TRADE' ORDER BY COLUMN_ID;
+
+
+

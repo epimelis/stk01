@@ -1,0 +1,14 @@
+
+html - stk events
+--filter search results - by ticker, by dates
+--pagination
+
+
+html chart
+--pass in stk trade object into this page.
+--display details of stk trade information for the stk event
+--labels for the marker
+--add MacD indicator
+
+html trade strategy
+--start search from strategy (instead of tkr symbol above)

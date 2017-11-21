@@ -3,19 +3,29 @@
 
 create database stkdb;
 
-/*
-drop table andrew_table;
-create table andrew_table(x int, y varchar(100));
-insert into andrew_table values (10, 'MYSQL : andrew_table in STKDB schema');
-select * from andrew_table;
-*/
+show tables;
 
-select * from stk;
-select * from stk_event;
 
 ----------------------------------------------
 
-show tables;
+--Generate create table/column statements in Oracle for Mysql
+SELECT column_name || '     '
+|| decode(data_type, 'NUMBER', 'INT',
+                     'DATE', 'VARCHAR(',
+                     'VARCHAR2', 'VARCHAR('
+        )
+|| decode(data_type,
+                    'DATE', data_length || ')',
+                    'VARCHAR2', data_length || ')'
+         )
+|| ','
+gen_mysql_columns
+FROM ALL_TAB_COLUMNS
+WHERE TABLE_NAME='STK_TRADE'
+ORDER BY COLUMN_ID;
+
+------------------------------------------------
+
 
 CREATE TABLE STK
 (
@@ -41,38 +51,40 @@ CREATE TABLE STK_EVENT
 );
 
 
-CREATE TABLE STK_TRADE
-(
-  STK_TRADE_ID        INT,
-  EVENT_ID            INT,
-  EXCH                VARCHAR(30),
-  TKR                 VARCHAR(30),
-  PER                 VARCHAR(3),
-  TRADE_TYPE          VARCHAR(20),
-  TRADE_STATUS        VARCHAR(20),
-  SHARES              INT,
-  BOT_PRICE           INT,
-  BOT_DATE            DATE,
-  BOT_AMT             INT,
-  SOLD_PRICE          INT,
-  SOLD_DATE           DATE,
-  SOLD_AMT            INT,
-  TARGET_EXIT_TYPE    VARCHAR(30),
-  TARGET_EXIT_PARAM   INT,
-  STOP_EXIT_TYPE      VARCHAR(30),
-  STOP_EXIT_PARAM     INT,
-  GAIN_LOSS_AMT       INT,
-  GAIN_LOSS_PERCENT   INT,
-  NOTES               VARCHAR(300),
-  CREATE_DATE         VARCHAR(10),
-  LOSS_THRESHOLD_AMT  INT,
-  GAIN_THRESHOLD_AMT  INT,
-  CREATE_DATE_PRICE   INT,
-  BOT_PENDING_DATE    DATE,
-  FIRST_DATE_CHECK    DATE,
-  LAST_DATE_CHECK     DATE,
-  STK_ID              INT
+create table stk_trade(
+STK_TRADE_ID     INT,
+EVENT_ID     INT,
+EXCH     VARCHAR(100),
+TKR     VARCHAR(100),
+PER     VARCHAR(100),
+TRADE_TYPE     VARCHAR(100),
+TRADE_STATUS     VARCHAR(100),
+SHARES     FLOAT,
+BOT_PRICE     FLOAT,
+BOT_DATE     VARCHAR(100),
+BOT_AMT     FLOAT,
+SOLD_PRICE     FLOAT,
+SOLD_DATE     VARCHAR(100),
+SOLD_AMT     FLOAT,
+TARGET_EXIT_TYPE     VARCHAR(100),
+TARGET_EXIT_PARAM     FLOAT,
+STOP_EXIT_TYPE     VARCHAR(100),
+STOP_EXIT_PARAM     FLOAT,
+GAIN_LOSS_AMT     FLOAT,
+GAIN_LOSS_PERCENT     FLOAT,
+NOTES     VARCHAR(100),
+CREATE_DATE     VARCHAR(100),
+LOSS_THRESHOLD_AMT     FLOAT,
+GAIN_THRESHOLD_AMT     FLOAT,
+CREATE_DATE_PRICE     FLOAT,
+BOT_PENDING_DATE     VARCHAR(100),
+FIRST_DATE_CHECK     VARCHAR(100),
+LAST_DATE_CHECK     VARCHAR(100),
+STK_ID     INT,
+MONITOR_START_DATE     VARCHAR(100),
+TRADE_ACTION     VARCHAR(100)
 );
+
 
 CREATE TABLE IND_BOLL_BANDS
 (
@@ -85,24 +97,21 @@ CREATE TABLE IND_BOLL_BANDS
 
 
 
+
 --#################################################################################################################################################
 --GENERATE INSERT STATEMENTS FOR MYSQL - run in Oracle
 
 CREATE TABLE MYSQL_INSERT (table_name varchar2(30), seq number, insert_str varchar2(4000)); 
-
-select * from stk where stk_id in (104, 1059) order by stk_id;
-select count(*), count(exch), count(tkr), count(per), count(tkr_date), count(open), count(high), count(low), count(close), count(vol), count(seq) from stk;
-
 
 --------------PLSQL-------------------
 
 
 select INSERT_STR from mysql_insert
 WHERE 1=1
-AND table_name='STK';
+AND table_name='STK_EVENT'
+ORDER BY SEQ;
 
 -----------------------------------------------------------------------------------
-
 
 declare
 --------------need to handle stk, stk_event and stk_trade------------------------
@@ -114,12 +123,19 @@ cursor c0 is
 v_tab_name varchar2(100) :='STK';
 */
 --------------------------------------
+/*
 cursor c0 is
     select stk_id from stk_event e
     where exists (select 1 from stk s where s.stk_id=e.stk_id and tkr='MSFT')
     order by stk_id;
 v_tab_name varchar2(100) :='STK_EVENT';
+*/
 --------------------------------------
+cursor c0 is
+    select stk_id from stk_trade e
+    where exists (select 1 from stk s where s.stk_id=e.stk_id and tkr='MSFT')
+    order by stk_id;
+v_tab_name varchar2(100) :='STK_TRADE';
 cursor c1(c_tab_name varchar2) is
     select * from user_tab_columns where table_name=c_tab_name order by column_id;
 v_column_name varchar2(100);
@@ -193,6 +209,7 @@ commit;
 exception when others then
     dbms_output.put_line(sqlerrm);
 end;
+
 
 
 
