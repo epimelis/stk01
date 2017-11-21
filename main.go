@@ -17,6 +17,7 @@ type StkEvent struct {
 	Stk_id     int
 	Tkr        string
 	Seq        int
+	Close      float32
 	Tkr_date   string
 	Event_id   int
 	Event_type string
@@ -35,7 +36,6 @@ type StkRow struct {
 
 var db *sql.DB
 var pageTemplate *template.Template
-var zz int = 60
 
 func init() {
 	var err error
@@ -47,21 +47,25 @@ func init() {
 }
 
 func GetStkEvents() (stkEvents []StkEvent, err error) {
-	rows, err := db.Query("select s.stk_id, s.tkr, s.seq, s.tkr_date, e.event_id, e.event_type from stk s, stk_event e where s.stk_id=e.stk_id order by seq")
+	rows, err := db.Query("select s.stk_id, s.tkr, s.seq, s.close, s.tkr_date, e.event_id, e.event_type from stk s, stk_event e where s.stk_id=e.stk_id order by seq")
 	defer rows.Close()
 	var (
 		stk_id, seq, event_id     int
+		close                     float32
 		tkr, tkr_date, event_type string
 		stk_events                []StkEvent
 	)
 	for rows.Next() {
-		err = rows.Scan(&stk_id, &tkr, &seq, &tkr_date, &event_id, &event_type)
-		stk_events = append(stk_events, StkEvent{stk_id, tkr, seq, tkr_date, event_id, event_type})
+		err = rows.Scan(&stk_id, &tkr, &seq, &close, &tkr_date, &event_id, &event_type)
+		stk_events = append(stk_events, StkEvent{stk_id, tkr, seq, close, tkr_date, event_id, event_type})
 	}
 	return stk_events, err
 
 }
-func GetChartData(tkr string, seq1 int, seq2 int) (stkRows []StkRow, err error) {
+
+func GetChartData(tkr string, in_seq int, drange int) (stkRows []StkRow, err error) {
+	seq1 := in_seq - drange
+	seq2 := in_seq + drange
 	rows, err := db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol/1000 from stk where tkr=? and seq between ? and ? order by seq", tkr, seq1, seq2)
 	defer rows.Close()
 	var (
@@ -94,12 +98,12 @@ func handlerJsonStk(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
 	tkr := vals.Get("tkr")
 	seqStr := vals.Get("seq")
+	dRangeStr := vals.Get("drange")
 	seq, err := strconv.Atoi(seqStr)
-	seq1 := seq - zz
-	seq2 := seq + zz
+	drange, err := strconv.Atoi(dRangeStr)
 	fmt.Println(tkr)
-	fmt.Println(seq)
-	stkRows, err := GetChartData(tkr, seq1, seq2)
+	fmt.Println("seq=", seq)
+	stkRows, err := GetChartData(tkr, seq, drange)
 
 	// decode chart data to JSON
 	data_json, err := json.Marshal(stkRows)
@@ -149,33 +153,38 @@ func handleListStkEvents(w http.ResponseWriter, r *http.Request) {
 }
 func handleChart(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("inside chart!!")
+	/*
+		vals := r.URL.Query()
+		tkr := vals.Get("tkr")
+		seqStr := vals.Get("seq")
+		drangeStr := vals.Get("drange")
+		seq, _ := strconv.Atoi(seqStr)
+		drange, _ := strconv.Atoi(drangeStr)
+	*/
 
-	vals := r.URL.Query()
-	tkr := vals.Get("tkr")
-	seqStr := vals.Get("seq")
-	drangeStr := vals.Get("drange")
-	seq, _ := strconv.Atoi(seqStr)
-	drange, _ := strconv.Atoi(drangeStr)
-	//seq1 := seq-drange
-	//seq2 := seq+drange
-	fmt.Println(tkr)
-	fmt.Println(seq)
-	fmt.Println(drange)
-	stkRows, err := GetChartData(tkr, seq-drange, seq+drange)
+	fmt.Println("inside func handleChart")
+	/*
+		fmt.Println(tkr)
+		fmt.Println(seq)
+		fmt.Println(drange)
+	*/
+	pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
+	pageTemplate.ExecuteTemplate(w, "tpl_chart", nil)
 
-	if err != nil {
-		fmt.Println("Error: Cannot stock charting data!")
-		fmt.Println(err)
-	} else {
-		pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
+	/*
+		stkRows, err := GetChartData(tkr, seq, drange)
+		if err != nil {
+			fmt.Println("Error: Cannot stock charting data!")
+			fmt.Println(err)
+		} else {
+			pageTemplate = template.Must(template.ParseFiles("templates/stk_chart.html"))
 
-		//run this when it is not a template
-		//pageTemplate.Execute(w, stkEvents)
-
-		//when it is a template
-		pageTemplate.ExecuteTemplate(w, "tpl_chart", stkRows)
-	}
-	fmt.Println("end show chart !!")
+			//run this when it is not a template
+			//pageTemplate.Execute(w, stkEvents)
+			//when it is a template, run this
+			pageTemplate.ExecuteTemplate(w, "tpl_chart", stkRows)
+		}
+	*/
 }
 
 func main() {

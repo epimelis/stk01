@@ -1,0 +1,43 @@
+-----------------------------------------------
+1) This is a html error according to intellij
+
+<!DOCTYPE html>
+
+
+-----------------------------------------------
+2) Candlestick plots of sma50 and sma200
+
+/*
+    //-----  plot0 - candlestick with series sma50 and sma200 -----------------------------------------------
+
+    var plot0 = chart.plot(0);
+    plot0.yGrid(true)
+      .xGrid(true)
+      .yMinorGrid(true)
+      .xMinorGrid(true);
+
+    var cs = plot0.candlestick(mapping);
+    var series_sma5 = plot0.sma(mapping, 5).series();
+    var series_sma20 = plot0.sma(mapping, 20).series();
+
+    //set attributes
+    cs.name('MSFT').legendItem().iconType('rising-falling');
+    series_sma5.name('SMA(5)').stroke('#bf360c');
+    series_sma20.name('SMA(20)').stroke('#0b1dbf');
+
+    //format tooltips
+    cs.tooltip().format('Open: {%Open}{decimalsCount:3} \nHigh: {%High}{decimalsCount:3} \nLow: {%Low}{decimalsCount:3} \nClose: {%Close}{decimalsCount:3}');
+    series_sma5.tooltip().format('SMA(5): {%value}{decimalsCount:3}');
+    series_sma20.tooltip().format('SMA(20): {%value}{decimalsCount:3}');
+
+    //format legend
+    cs.legendItem().format(function(){
+        return "Open: " + this.open + "   High: " + this.high+ "   Low: " + this.low + "   Close: " + this.close
+    });
+    series_sma5.legendItem().format(function(){
+      return 'SMA(5): ' + this.value.toFixed(3)
+    });
+    series_sma20.legendItem().format(function(){
+      return 'SMA(20): ' + this.value.toFixed(3)
+    });
+*/

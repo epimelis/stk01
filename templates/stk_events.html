@@ -1,5 +1,4 @@
 {{ define "tpl_events" }}
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -14,18 +13,18 @@
 <body>
 <div>
     <p class="lead">
-        <a href="/thread/new">Stock Events</a>
+        Stock Events
     </p>
     {{ range . }}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <span class="lead"> <i class="fa fa-caret-square-o-right"></i> {{ .Tkr }}</span>
-        </div>
-        <div class="panel-body">
-            Tkr :{{ .Tkr }} - Seq :{{ .Seq }} - Stock Id :{{ .Stk_id }} - Tkr Date : {{ .Tkr_date }} - Event type : {{ .Event_type }}
-            <div class="pull-right">
-                <a href="/chart?tkr={{.Tkr}}&seq={{.Seq}}&drange=30" target="_blank">Show chart</a>
-            </div>
+            <span class="lead"> <i class="fa fa-caret-square-o-right"></i> {{ .Tkr }} - {{ .Tkr_date }}</span>
+            <span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                Close :{{ .Close }} | Seq :{{ .Seq }} | Stock Id :{{ .Stk_id }} | Event type : {{ .Event_type }}
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </span>
+            <span><a href="/chart?tkr={{.Tkr}}&seq={{.Seq}}&drange=30&Stk_id={{.Stk_id}}&Tkr_date={{.Tkr_date}}&close={{.Close}}" target="_blank">Show chart</a></span>
         </div>
     </div>
     {{ end }}

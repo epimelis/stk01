@@ -1,5 +1,4 @@
 {{ define "tpl_chart" }}
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -31,7 +30,7 @@ padding: 0;
 .container
 {
 width: 80%;
-height: 800px;
+height: 650px;
 }
   </style>
 
@@ -46,9 +45,6 @@ height: 800px;
         </div>
         <div class="panel-body">
             [Details]
-            <!--div class="pull-right">
-                <a href="/zzz">CCC</a>
-            </div-->
         </div>
     </div>
     <!-- ################################# -->
@@ -76,10 +72,17 @@ anychart.onDocumentReady(function() {
 
     var url = new URL(current_page_url);
     var param_tkr = url.searchParams.get("tkr");
+    var param_Tkr_date = url.searchParams.get("Tkr_date");
     var param_seq= url.searchParams.get("seq");
+    var param_drange= url.searchParams.get("drange");
+    var param_close= url.searchParams.get("close");
+
+    var markerX=param_Tkr_date;
+    var markerY=param_close*0.95;
+
     //alert("tkr=" + param_tkr + " and seq=" + param_seq);
 
-    var url_json='http://localhost/get-json-stk?tkr=' +param_tkr + '&seq=' + param_seq;
+    var url_json='http://localhost/get-json-stk?tkr=' +param_tkr + '&seq=' + param_seq + '&drange=' + param_drange;
     //alert("url_json=" + url_json);
 
     //---------------Json--------------------------------
@@ -105,42 +108,6 @@ anychart.onDocumentReady(function() {
     chart = anychart.stock();
     chart.crosshair(true);
 
-
-/*
-    //-----  plot0 - candlestick with series sma50 and sma200 -----------------------------------------------
-
-    var plot0 = chart.plot(0);
-    plot0.yGrid(true)
-      .xGrid(true)
-      .yMinorGrid(true)
-      .xMinorGrid(true);
-
-    var cs = plot0.candlestick(mapping);
-    var series_sma5 = plot0.sma(mapping, 5).series();
-    var series_sma20 = plot0.sma(mapping, 20).series();
-
-    //set attributes
-    cs.name('MSFT').legendItem().iconType('rising-falling');
-    series_sma5.name('SMA(5)').stroke('#bf360c');
-    series_sma20.name('SMA(20)').stroke('#0b1dbf');
-
-    //format tooltips
-    cs.tooltip().format('Open: {%Open}{decimalsCount:3} \nHigh: {%High}{decimalsCount:3} \nLow: {%Low}{decimalsCount:3} \nClose: {%Close}{decimalsCount:3}');
-    series_sma5.tooltip().format('SMA(5): {%value}{decimalsCount:3}');
-    series_sma20.tooltip().format('SMA(20): {%value}{decimalsCount:3}');
-
-    //format legend
-    cs.legendItem().format(function(){
-        return "Open: " + this.open + "   High: " + this.high+ "   Low: " + this.low + "   Close: " + this.close
-    });
-    series_sma5.legendItem().format(function(){
-      return 'SMA(5): ' + this.value.toFixed(3)
-    });
-    series_sma20.legendItem().format(function(){
-      return 'SMA(20): ' + this.value.toFixed(3)
-    });
-*/
-
     //-----  plot0 - candlestick with bollinger bands -----------------------------------------------
 
     var plot0 = chart.plot(0);
@@ -149,12 +116,15 @@ anychart.onDocumentReady(function() {
       .yMinorGrid(true)
       .xMinorGrid(true);
 
+
+
     // create a Marker annotation
     var controller = plot0.annotations();
     controller.marker({
-    xAnchor: "2001-03-21",
-    valueAnchor: 24.00
+        xAnchor: markerX,
+        valueAnchor: markerY
     });
+
 
     // create BBands indicator with period = 20, deviation = 2
 
@@ -172,6 +142,7 @@ anychart.onDocumentReady(function() {
     bBandsIndicator.upperSeries().tooltip().format('BB-Upper: {%value}{decimalsCount:3}');
     bBandsIndicator.middleSeries().tooltip().format('BB-Middle: {%value}{decimalsCount:3}');
     bBandsIndicator.lowerSeries().tooltip().format('BB-Lower: {%value}{decimalsCount:3}');
+
 
 
     //-----plot1 - volume ----------------------------
