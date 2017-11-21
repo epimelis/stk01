@@ -101,22 +101,27 @@ select INSERT_STR from mysql_insert
 WHERE 1=1
 AND table_name='STK';
 
+-----------------------------------------------------------------------------------
 
 
 declare
+--------------need to handle stk, stk_event and stk_trade------------------------
 /*
 cursor c0 is
     select stk_id from stk
     where TKR='MSFT'
     order by stk_id;
+v_tab_name varchar2(100) :='STK';
 */
+--------------------------------------
 cursor c0 is
     select stk_id from stk_event e
     where exists (select 1 from stk s where s.stk_id=e.stk_id and tkr='MSFT')
     order by stk_id;
+v_tab_name varchar2(100) :='STK_EVENT';
+--------------------------------------
 cursor c1(c_tab_name varchar2) is
     select * from user_tab_columns where table_name=c_tab_name order by column_id;
-v_tab_name varchar2(1000);
 v_column_name varchar2(100);
 v_insert_str varchar2(8000);
 v_sql varchar2(4000);
@@ -124,12 +129,7 @@ v_value varchar2(500);
 v_cnt number;
 v_seq number;
 begin
-/*
-delete from mysql_insert where table_name='STK';
-v_tab_name :='STK';
-*/
-delete from mysql_insert where table_name='STK_EVENT';
-v_tab_name :='STK_EVENT';
+delete from mysql_insert where table_name=v_tab_name;
 v_seq :=0;
 --==========================================================================================================
 --List out column names in insert statement
