@@ -1,83 +1,5 @@
 --#################################################################################################################################################
---USEFUL QUERY ON STK TABLES
-select 
-tkr, 
-s.seq, --sma1.seq, sma2.seq, 
---to_char(tkr_date, 'yyyy-mm-dd') ||chr(9)|| open ||chr(9)|| high ||chr(9)|| low ||chr(9)||close ||chr(9)||vol ||chr(9)|| chr(9)
-to_char(tkr_date, 'yyyy-mm-dd') tkr_date, 
-open, high, low, close, vol,
-sma1.sma_val sma1, 
-sma2.sma_val sma2
-from 
-    stk s, 
-   (select * from ind_sma where sma_range=10) sma1,
-   (select * from ind_sma where sma_range=40) sma2
-where s.stk_id=sma1.stk_id and s.stk_id=sma2.stk_id 
-order by tkr_date;
-
---extract data CSV files for charting.
-select to_char(tkr_date, 'yyyy-mm-dd') tkr_date, open, high, low, close, vol/1000 vol
-from stk where tkr='MSFT' 
---and to_char(tkr_date, 'yyyy') > 2015
-ORDER BY SEQ
-
---#################################################################################################################################################
---AHMAD APIS
-
-
-testing_stk_trading.get_pending_action(
-    p_in_event_id =>p_in_event_id,
-    p_in_exch  =>p_in_exch,
-    p_in_tkr   =>p_in_tkr,
-    p_in_price =>p_in_price,
-    p_out_event_id =>p_out_event_id,
-    p_out_exch =>p_out_exch,
-    p_out_tkr  =>p_out_tkr,
-    p_out_trade_type =>p_out_trade_type,
-    p_out_share =>p_out_share,
-    p_out_price =>p_out_price,
-    p_out_action =>p_out_action
-);
-
-
-declare
-p_in_event_id number;
-p_in_exch  varchar2(30);
-p_in_tkr   varchar2(30);
-p_in_price number;
-p_out_event_id number;
-p_out_exch varchar2(30);
-p_out_tkr  varchar2(30);
-p_out_trade_type varchar2(30);
-p_out_share number;
-p_out_price number;
-p_out_action varchar2(30);
-begin
-dbms_output.put_line('aa1');
-testing_stk_trading.get_pending_action(
-    p_in_event_id =>p_in_event_id,
-    p_in_exch  =>p_in_exch,
-    p_in_tkr   =>p_in_tkr,
-    p_in_price =>p_in_price,
-    p_out_event_id =>p_out_event_id,
-    p_out_exch =>p_out_exch,
-    p_out_tkr  =>p_out_tkr,
-    p_out_trade_type =>p_out_trade_type,
-    p_out_share =>p_out_share,
-    p_out_price =>p_out_price,
-    p_out_action =>p_out_action
-);
-dbms_output.put_line(p_out_exch ||'*'|| p_out_trade_type || '*' ||p_out_share ||'*' || p_out_price ||'*' || p_out_action);
-dbms_output.put_line('aa2');
-exception when others then 
-    dbms_output.put_line(sqlerrm);
-end;
-/
-
-
-
---#################################################################################################################################################
---MYSQL CREATE TABLES
+--MYSQL CREATE TABLES - run in Mysql
 
 create database stkdb;
 
@@ -164,7 +86,7 @@ CREATE TABLE IND_BOLL_BANDS
 
 
 --#################################################################################################################################################
---GENERATE INSERT STATEMENTS FOR MYSQL
+--GENERATE INSERT STATEMENTS FOR MYSQL - run in Oracle
 
 CREATE TABLE MYSQL_INSERT (table_name varchar2(30), seq number, insert_str varchar2(4000)); 
 
