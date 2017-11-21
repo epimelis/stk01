@@ -20,8 +20,6 @@ type StkEvent struct {
 	Tkr_date   string
 	Event_id   int
 	Event_type string
-	Sma1_dir   string
-	Sma2_dir   string
 }
 type StkRow struct {
 	Stk_id   int
@@ -33,8 +31,6 @@ type StkRow struct {
 	Low      float32
 	Close    float32
 	Volume   float32
-	Sma50    float32
-	Sma200   float32
 }
 
 var db *sql.DB
@@ -51,32 +47,31 @@ func init() {
 }
 
 func GetStkEvents() (stkEvents []StkEvent, err error) {
-	rows, err := db.Query("select stk_id, tkr, seq, tkr_date, event_id, event_type, sma1_dir, sma2_dir from ay_events order by seq")
+	rows, err := db.Query("select s.stk_id, s.tkr, s.seq, s.tkr_date, e.event_id, e.event_type from stk s, stk_event e where s.stk_id=e.stk_id order by seq")
 	defer rows.Close()
 	var (
-		stk_id, seq, event_id                         int
-		tkr, tkr_date, event_type, sma1_dir, sma2_dir string
-		stk_events                                    []StkEvent
+		stk_id, seq, event_id     int
+		tkr, tkr_date, event_type string
+		stk_events                []StkEvent
 	)
 	for rows.Next() {
-		err = rows.Scan(&stk_id, &tkr, &seq, &tkr_date, &event_id, &event_type, &sma1_dir, &sma2_dir)
-		stk_events = append(stk_events, StkEvent{stk_id, tkr, seq, tkr_date, event_id, event_type, sma1_dir, sma2_dir})
+		err = rows.Scan(&stk_id, &tkr, &seq, &tkr_date, &event_id, &event_type)
+		stk_events = append(stk_events, StkEvent{stk_id, tkr, seq, tkr_date, event_id, event_type})
 	}
 	return stk_events, err
 
 }
 func GetChartData(tkr string, seq1 int, seq2 int) (stkRows []StkRow, err error) {
-	rows, err := db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol/1000, sma50, sma200 from stk2 where tkr=? and seq between ? and ? order by seq", tkr, seq1, seq2)
-	//rows, err :=db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol, sma50, sma200 from stk2 where tkr=:1 and seq between :2 and :3 order by seq", tkr, seq1, seq2)
+	rows, err := db.Query("select stk_id, tkr, seq, tkr_date, open, high, low, close, vol/1000 from stk where tkr=? and seq between ? and ? order by seq", tkr, seq1, seq2)
 	defer rows.Close()
 	var (
-		stk_id, seq                                int
-		open, high, low, close, vol, sma50, sma200 float32
-		ticker, tkr_date                           string
+		stk_id, seq                 int
+		open, high, low, close, vol float32
+		ticker, tkr_date            string
 	)
 	for rows.Next() {
-		err = rows.Scan(&stk_id, &ticker, &seq, &tkr_date, &open, &high, &low, &close, &vol, &sma50, &sma200)
-		stkRows = append(stkRows, StkRow{stk_id, tkr, seq, tkr_date, open, high, low, close, vol, sma50, sma200})
+		err = rows.Scan(&stk_id, &ticker, &seq, &tkr_date, &open, &high, &low, &close, &vol)
+		stkRows = append(stkRows, StkRow{stk_id, tkr, seq, tkr_date, open, high, low, close, vol})
 	}
 	return stkRows, err
 

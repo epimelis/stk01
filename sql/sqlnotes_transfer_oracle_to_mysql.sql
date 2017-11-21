@@ -79,6 +79,19 @@ end;
 --#################################################################################################################################################
 --MYSQL CREATE TABLES
 
+create database stkdb;
+
+/*
+drop table andrew_table;
+create table andrew_table(x int, y varchar(100));
+insert into andrew_table values (10, 'MYSQL : andrew_table in STKDB schema');
+select * from andrew_table;
+*/
+
+select * from stk;
+select * from stk_event;
+
+----------------------------------------------
 
 show tables;
 
