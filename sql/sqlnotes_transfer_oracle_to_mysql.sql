@@ -10,7 +10,7 @@ show tables;
 
 --Generate create table/column statements in Oracle for Mysql
 SELECT column_name || '     '
-|| decode(data_type, 'NUMBER', 'INT',
+|| decode(data_type, 'NUMBER', 'FLOAT',
                      'DATE', 'VARCHAR(',
                      'VARCHAR2', 'VARCHAR('
         )
@@ -25,7 +25,7 @@ WHERE TABLE_NAME='STK_TRADE'
 ORDER BY COLUMN_ID;
 
 ------------------------------------------------
-
+--Create tables in mysql
 
 CREATE TABLE STK
 (
